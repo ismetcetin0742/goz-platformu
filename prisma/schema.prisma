@@ -1,0 +1,49 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"] // Sadece senin bilgisayarın için olan motoru tutar
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  name          String?
+  email         String    @unique
+  password      String?
+  role          String    @default("USER")
+  emailVerified DateTime? // Mail doğrulandığında bu tarih dolacak
+  verifyToken   String?   @unique // Maildeki linke koyacağımız gizli kod
+  posts         Post[]
+}
+model Settings {
+  id                Int      @id @default(1) // Sadece 1 satır olacak
+  mailService       String   @default("SMTP") // "SMTP" veya "RESEND"
+  smtpHost          String?
+  smtpPort          Int?     @default(587)
+  smtpUser          String?
+  smtpPass          String?
+  resendApiKey      String?
+  fromEmail         String   @default("noreply@gozplatformu.com")
+  updatedAt         DateTime @updatedAt
+}
+enum PostStatus {
+  PENDING   // Onay Bekliyor
+  APPROVED  // Onaylandı (Yayında)
+  REJECTED  // Reddedildi
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  title       String
+  content     String     @db.Text
+  imageUrl    String?
+  status      PostStatus @default(PENDING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  author      User       @relation(fields: [authorId], references: [id])
+  authorId    Int
+}
