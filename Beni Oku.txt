@@ -4,3 +4,12 @@ https://vercel.com/
 Vencent ile veritabanı bağlantısı yapma bulut 
 
 https://console.neon.tech/app/org-blue-truth-21333229/welcome
+
+Mail Sunucu Bİlgileri
+
+https://resend.com/api-keys
+SMTP:smtp.resend.com
+PORT:587
+Kullanıcı:resend
+Şifre:re_JCA2TEPh_57AFm6vZ3QcJ8qS4oFZzgF4S
+Mail Adresi :onboarding@resend.dev
