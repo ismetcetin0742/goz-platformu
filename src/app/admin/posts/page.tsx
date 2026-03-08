@@ -30,7 +30,6 @@ export default function AdminPostsPage() {
       });
 
       if (res.ok) {
-        // Başarılıysa listeden kaldır (yeniden yüklemeye gerek kalmadan akıcı bir UI)
         setPosts((prev) => prev.filter((p: any) => p.id !== id));
       } else {
         const errData = await res.json();

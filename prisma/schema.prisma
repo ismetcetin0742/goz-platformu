@@ -15,7 +15,7 @@ model User {
   password      String?
   role          String    @default("USER")
   emailVerified DateTime? // Mail doğrulandığında bu tarih dolacak
-  verifyToken   String?   @unique // Maildeki linke koyacağımız gizli kod
+  verifyToken String? @unique @db.VarChar(255) // Maildeki linke koyacağımız gizli kod
   posts         Post[]
 }
 model Settings {
