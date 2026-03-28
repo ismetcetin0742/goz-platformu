@@ -8,7 +8,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const session = await auth();
 
     // Güvenlik: ADMIN ve EDITOR rolüne sahip kullanıcılar işlem yapabilir
-    if (!session || !["ADMIN", "EDITOR"].includes(session.user?.role as string)) {
+    if (!session || !["ADMIN", "EDITOR"].includes((session.user as any)?.role as string)) {
       return NextResponse.json({ error: "Yetkisiz erişim. Bu işlemi sadece yetkililer yapabilir." }, { status: 401 });
     }
 
@@ -37,7 +37,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   try {
     const session = await auth();
 
-    if (!session || !["ADMIN", "EDITOR"].includes(session.user?.role as string)) {
+    if (!session || !["ADMIN", "EDITOR"].includes((session.user as any)?.role as string)) {
       return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 401 });
     }
 

@@ -9,7 +9,7 @@ export default async function AdminUsersPage() {
   const session = await auth();
   
   // Ekstra Güvenlik: Sadece ADMIN'ler kullanıcı listesini görebilir
-  if (session?.user?.role !== "ADMIN") {
+  if ((session?.user as any)?.role !== "ADMIN") {
     redirect("/admin"); 
   }
 

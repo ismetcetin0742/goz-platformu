@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DashboardChart from "./DashboardChart";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 async function getStats() {
   // Son 7 günün başlangıç tarihini hesapla
@@ -39,9 +40,14 @@ async function getStats() {
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const stats = await getStats();
-  const isAdmin = session?.user?.role === "ADMIN";
 
+  const userRole = (session?.user as any)?.role;
+  if (!session || userRole !== "ADMIN") {
+    redirect("/");
+  }
+
+  const stats = await getStats();
+  const isAdmin = userRole === "ADMIN";
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">

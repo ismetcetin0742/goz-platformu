@@ -18,7 +18,7 @@ async function getOpticians() {
 export default async function AdminOpticiansPage() {
   const session = await auth();
   // Sadece ADMIN ve EDITOR rollerinin bu sayfayı görmesine izin ver
-  if (!["ADMIN", "EDITOR"].includes(session?.user?.role as string)) {
+  if (!["ADMIN", "EDITOR"].includes((session?.user as any)?.role as string)) {
     redirect("/admin");
   }
 

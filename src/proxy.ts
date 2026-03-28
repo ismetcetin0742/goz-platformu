@@ -10,7 +10,7 @@ const adminRoutePrefix = "/admin"; // Yetkili kullanıcıların görebileceği s
 const proxy = auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const userRole = req.auth?.user?.role;
+  const userRole = (req.auth?.user as any)?.role;
 
   const isAuthPage = authRoutes.includes(nextUrl.pathname);
   const isProtectedPage = protectedRoutes.includes(nextUrl.pathname);
