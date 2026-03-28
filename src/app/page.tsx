@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import UserMenu from "@/components/UserMenu";
-import NearestOpticians from "@/components/NearestOpticians";
+
+import NearestOpticiansWrapper from "@/components/NearestOpticiansWrapper";
 
 export default async function HomePage(props: { searchParams: Promise<{ error?: string }> }) {
   const searchParams = await props.searchParams;
@@ -38,7 +39,7 @@ export default async function HomePage(props: { searchParams: Promise<{ error?: 
           {/* Ana Navigasyon */}
           <nav className="hidden lg:flex gap-8 text-[13px] font-bold uppercase tracking-wider text-[#515151]">
             <Link href="#" className="hover:text-[#005da4] transition-colors">Göz Koşulları</Link>
-            <Link href="#" className="hover:text-[#005da4] transition-colors">Gözlükler</Link>
+            <Link href="/gozlukler" className="hover:text-[#005da4] transition-colors">Gözlükler</Link>
             <Link href="#" className="hover:text-[#005da4] transition-colors">Lensler</Link>
             <Link href="/post-add" className="text-[#00a3e0] hover:text-[#005da4] transition-colors">✨ İçerik Paylaş</Link>
           </nav>
@@ -124,7 +125,7 @@ export default async function HomePage(props: { searchParams: Promise<{ error?: 
             <p className="text-gray-500 font-medium mt-2 text-lg mb-10">
                 Konumunuza izin vererek anlaşmalı optik mağazalarını keşfedin.
             </p>
-            <NearestOpticians />
+            <NearestOpticiansWrapper />
         </div>
       </section>
 

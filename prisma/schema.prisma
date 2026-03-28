@@ -19,6 +19,7 @@ model User {
   banReason     String?   // Yasaklanma nedenini saklamak için
   emailVerified DateTime? // Mail doğrulandığında bu tarih dolacak
   verifyToken String? @unique @db.VarChar(255) // Maildeki linke koyacağımız gizli kod
+  managedOpticians OpticianManager[] // Kullanıcının yönettiği mağazalar
   posts         Post[]
   isActive  Boolean  @default(true)
    createdAt     DateTime @default(now())
@@ -63,6 +64,38 @@ model Optician {
   phone     String?
   latitude  Float
   longitude Float
+  hasSunGlasses   Boolean  @default(false) // Güneş gözlüğü yetkisi
+  hasPrescription Boolean  @default(false) // Numaralı gözlük yetkisi
+  managers  OpticianManager[] // Mağazayı yöneten kullanıcılar
+  products  Product[]         // Mağazanın ürünleri
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model OpticianManager {
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  optician   Optician @relation(fields: [opticianId], references: [id], onDelete: Cascade)
+  opticianId Int
+
+  @@id([userId, opticianId])
+}
+
+enum ProductCategory {
+  SUNGLASSES
+  PRESCRIPTION
+}
+
+model Product {
+  id          Int             @id @default(autoincrement())
+  name        String
+  brand       String
+  description String          @db.Text
+  price       Decimal         @db.Decimal(10, 2)
+  imageUrl    String?
+  category    ProductCategory
+  optician    Optician        @relation(fields: [opticianId], references: [id], onDelete: Cascade)
+  opticianId  Int
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
