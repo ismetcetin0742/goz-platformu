@@ -42,6 +42,7 @@ export default async function AdminDashboard() {
   const stats = await getStats();
   const isAdmin = session?.user?.role === "ADMIN";
 
+
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
         <main className="max-w-7xl mx-auto px-6 py-16">

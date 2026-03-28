@@ -38,9 +38,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       // Sadece ilk girişte user dolu gelir, o an her şeyi token'a mühürle
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.name = user.name; // İsmi token'a yazdık
+        token.id = user.id as string;
+        token.role = user.role as string;
+        token.name = user.name as string; // İsmi token'a yazdık
       }
       return token;
     },
