@@ -39,7 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Sadece ilk girişte user dolu gelir, o an her şeyi token'a mühürle
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
         token.name = user.name; // İsmi token'a yazdık
       }
       return token;
@@ -48,7 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Token'daki her şeyi session'a (arayüze) aktar
       if (session.user && token) {
         session.user.id = token.id as string;
-        (session.user as any).role = token.role as string;
+        session.user.role = token.role as string;
         session.user.name = token.name as string; // İsmi arayüze bastık
 
         // Kullanıcının yasaklı olup olmadığını veritabanından kontrol et
@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!dbUser || dbUser.isBanned) {
-            (session as any).error = "BannedUser";
+            session.error = "BannedUser";
           }
         }
       }
