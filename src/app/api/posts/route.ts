@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         content,
         imageUrl,
         authorId: dbUser.id, // İlişkiyi burası kuruyor
-        status: "PENDING",   // Varsayılan onay bekliyor
+        status: "APPROVED",  // Anında ana sayfada yayınlanması için APPROVED yapıldı
       },
     });
 

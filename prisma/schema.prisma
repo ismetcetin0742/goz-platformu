@@ -12,11 +12,17 @@ model User {
   id    Int     @id @default(autoincrement())
   name          String?
   email         String    @unique
+  image         String?
   password      String?
   role          String    @default("USER")
+  isBanned      Boolean   @default(false)
+  banReason     String?   // Yasaklanma nedenini saklamak için
   emailVerified DateTime? // Mail doğrulandığında bu tarih dolacak
   verifyToken String? @unique @db.VarChar(255) // Maildeki linke koyacağımız gizli kod
   posts         Post[]
+  isActive  Boolean  @default(true)
+   createdAt     DateTime @default(now())
+  
 }
 model Settings {
   id                Int      @id @default(1) // Sadece 1 satır olacak
@@ -40,10 +46,23 @@ model Post {
   title       String
   content     String     @db.Text
   imageUrl    String?
+  category    String     @default("Göz Sağlığı")
+  views       Int        @default(0)
   status      PostStatus @default(PENDING)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   
   author      User       @relation(fields: [authorId], references: [id])
   authorId    Int
+}
+
+model Optician {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String?
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

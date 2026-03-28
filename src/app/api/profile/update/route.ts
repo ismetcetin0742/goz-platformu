@@ -8,8 +8,12 @@ export async function POST(req: Request) {
 
   const { name, imageUrl } = await req.json();
 
+  if (!session.user?.id) {
+    return NextResponse.json({ error: "Kullanıcı ID bulunamadı" }, { status: 400 });
+  }
+
   const updatedUser = await prisma.user.update({
-    where: { id: session.user?.id },
+    where: { id: Number(session.user.id) },
     data: { name, image: imageUrl },
   });
 

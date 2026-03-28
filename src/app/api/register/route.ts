@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
 import { Resend } from "resend";
 
 export async function POST(req: Request) {
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
           user: settings.smtpUser!,
           pass: settings.smtpPass!,
         },
-      });
+      } as any);
 
       await transporter.sendMail({
         from: settings.fromEmail,

@@ -24,12 +24,29 @@ async function main() {
   });
 
   console.log('✅ İşlem Başarılı: Admin eklendi ->', admin.email);
+
+  // Varsayılan Sistem (SMTP) Ayarlarını Ekleme
+  const settings = await prisma.settings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      mailService: 'SMTP',
+      smtpHost: 'smtp.resend.com', 
+      smtpPort: 587,              
+      smtpUser: 'resend', 
+      smtpPass: 're_JCA2TEPh_57AFm6vZ3QcJ8qS4oFZzgF4S',       
+      fromEmail: 'onboarding@resend.dev', 
+    },
+  });
+
+  console.log('✅ İşlem Başarılı: Varsayılan SMTP ayarları eklendi.');
 }
 
 main()
-  .then(async () => await prisma.$disconnect())
-  .catch(async (e) => {
+  .catch((e) => {
     console.error('❌ Hata oluştu:', e);
-    await prisma.$disconnect();
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });

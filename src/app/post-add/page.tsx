@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function PostAdd() {
-  const [formData, setFormData] = useState({ title: "", content: "", imageUrl: "" });
+  const [formData, setFormData] = useState({ title: "", content: "", imageUrl: "", category: "Göz Sağlığı" });
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -67,7 +68,12 @@ export default function PostAdd() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <div className="max-w-3xl w-full mb-4">
+        <button onClick={() => router.back()} type="button" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#005da4] font-bold transition-colors">
+          <span>←</span> Geri Dön
+        </button>
+      </div>
       <div className="max-w-3xl w-full bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
         <h1 className="text-4xl font-black text-gray-900 mb-6 text-center">Yeni İçerik Paylaş</h1>
 
@@ -84,6 +90,23 @@ export default function PostAdd() {
             />
           </div>
           
+          {/* Kategori Seçimi */}
+          <div>
+            <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Kategori</label>
+            <select 
+              required
+              className="w-full p-4 bg-white border-2 border-gray-200 rounded-2xl text-gray-900 font-semibold text-lg outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all"
+              value={formData.category}
+              onChange={e => setFormData({...formData, category: e.target.value})}
+            >
+              <option value="Göz Sağlığı">Göz Sağlığı</option>
+              <option value="Gözlükler">Gözlükler</option>
+              <option value="Lensler">Lensler</option>
+              <option value="Hastalıklar">Hastalıklar</option>
+              <option value="Tedaviler">Tedaviler</option>
+            </select>
+          </div>
+
           {/* İçerik Metni */}
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-2 ml-1">Makale İçeriği</label>
@@ -102,7 +125,7 @@ export default function PostAdd() {
             <div className="relative border-2 border-dashed border-blue-200 rounded-2xl p-8 bg-blue-50/50 hover:bg-blue-50 transition-all flex flex-col items-center justify-center group">
               <input 
                 type="file" 
-                accept="image/*" 
+                accept="image/png, image/jpeg, image/webp" 
                 onChange={handleImageUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
@@ -127,7 +150,7 @@ export default function PostAdd() {
           <button 
             type="submit" 
             disabled={loading || uploading}
-            className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 transition shadow-xl shadow-blue-200 disabled:bg-gray-400 active:scale-[0.98] text-xl"
+            className="w-full bg-[#005da4] text-white font-black py-5 rounded-2xl hover:bg-[#002f56] transition shadow-xl shadow-[#005da4]/30 disabled:bg-gray-400 active:scale-[0.98] text-xl"
           >
             {loading ? "Sistem Kaydediyor..." : "İçeriği Onaya Gönder 🚀"}
           </button>

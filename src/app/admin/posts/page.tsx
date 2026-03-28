@@ -1,96 +1,76 @@
-"use client";
-import { useState, useEffect } from "react";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-export default function AdminPostsPage() {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default async function AdminPostsPage(props: { searchParams: Promise<{ status?: string }> }) {
+  const searchParams = await props.searchParams;
+  const statusFilter = searchParams.status;
 
-  const loadPosts = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/posts/pending");
-      const data = await res.json();
-      setPosts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Yükleme Hatası:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // URL'den gelen duruma göre veritabanı filtreleme koşulu oluşturuyoruz
+  const whereClause = statusFilter ? { status: statusFilter as "PENDING" | "APPROVED" | "REJECTED" } : {};
 
-  useEffect(() => { loadPosts(); }, []);
-
-  const handleAction = async (id: number, status: "APPROVED" | "REJECTED") => {
-    try {
-      const res = await fetch(`/api/admin/posts/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-
-      if (res.ok) {
-        setPosts((prev) => prev.filter((p: any) => p.id !== id));
-      } else {
-        const errData = await res.json();
-        alert("Hata: " + errData.error);
-      }
-    } catch (error) {
-      alert("Bağlantı hatası oluştu.");
-    }
-  };
+  // İçerikleri filtreye göre en yeniden en eskiye doğru yazar bilgisiyle birlikte çekiyoruz
+  const posts = await prisma.post.findMany({
+    where: whereClause,
+    orderBy: { createdAt: "desc" },
+    include: { author: { select: { name: true } } },
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-black text-[#002f56]">Onay Bekleyenler ⚖️</h1>
-          <Link href="/admin" className="bg-white border px-4 py-2 rounded-lg font-bold text-gray-600 hover:bg-gray-50 transition">
-            ← Panele Dön
-          </Link>
+    <div className="min-h-screen bg-[#f8f9fa]">
+      <main className="max-w-7xl mx-auto px-6 py-16">
+
+        {/* Başlık ve Filtreler */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+          <h1 className="text-3xl font-black text-[#002f56]">İçerik Yönetimi</h1>
+          
+          {/* Filtre Menüsü */}
+          <div className="flex flex-wrap bg-white rounded-xl shadow-sm border border-gray-100 p-1.5 gap-1">
+            <Link href="/admin/posts" className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${!statusFilter ? 'bg-[#005da4] text-white shadow' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}>Tümü</Link>
+            <Link href="/admin/posts?status=PENDING" className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${statusFilter === 'PENDING' ? 'bg-orange-50 text-orange-600 shadow-sm border border-orange-100' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}>Bekleyenler</Link>
+            <Link href="/admin/posts?status=APPROVED" className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${statusFilter === 'APPROVED' ? 'bg-green-50 text-green-600 shadow-sm border border-green-100' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}>Onaylılar</Link>
+            <Link href="/admin/posts?status=REJECTED" className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${statusFilter === 'REJECTED' ? 'bg-red-50 text-red-600 shadow-sm border border-red-100' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'}`}>Reddedilenler</Link>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-20 text-[#00a3e0] font-bold animate-pulse">İçerikler kontrol ediliyor...</div>
-        ) : (
-          <div className="space-y-6">
-            {posts.length > 0 ? posts.map((post: any) => (
-              <div key={post.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col md:flex-row gap-6">
-                {post.imageUrl && (
-                  <img src={post.imageUrl} alt="" className="w-full md:w-48 h-32 object-cover rounded-2xl shadow-inner bg-gray-100" />
-                )}
-                <div className="flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2 mb-4">{post.content}</p>
-                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#00a3e0]">
-                    <span>👤 {post.author?.name || "İsimsiz"}</span>
-                    <span>•</span>
-                    <span>📅 {new Date(post.createdAt).toLocaleDateString("tr-TR")}</span>
-                  </div>
-                </div>
-                <div className="flex md:flex-col gap-2 justify-center">
-                  <button 
-                    onClick={() => handleAction(post.id, "APPROVED")}
-                    className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-100"
-                  >
-                    Onayla
-                  </button>
-                  <button 
-                    onClick={() => handleAction(post.id, "REJECTED")}
-                    className="bg-red-50 text-red-600 px-8 py-3 rounded-xl font-bold hover:bg-red-100 transition-all"
-                  >
-                    Reddet
-                  </button>
-                </div>
-              </div>
-            )) : (
-              <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-200">
-                <p className="text-gray-400 text-xl font-bold font-serif">Şu an onay bekleyen içerik bulunmuyor. ✨</p>
-              </div>
-            )}
+        {/* İçerik Tablosu */}
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="text-xs text-[#002f56] uppercase border-b border-gray-200 font-bold bg-white">
+                <tr>
+                  <th className="p-5">Başlık</th>
+                  <th className="p-5">Kategori</th>
+                  <th className="p-5">Yazar</th>
+                  <th className="p-5">Durum</th>
+                  <th className="p-5 text-right">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {posts.map((post) => (
+                  <tr key={post.id} className="border-b border-gray-100 last:border-none hover:bg-gray-50 transition-colors">
+                    <td className="p-5 font-bold text-gray-800 max-w-xs truncate" title={post.title}>{post.title}</td>
+                    <td className="p-5 text-gray-600 text-sm font-medium">{post.category}</td>
+                    <td className="p-5 text-gray-600 text-sm">{post.author?.name || "Bilinmiyor"}</td>
+                    <td className="p-5">
+                      <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                        post.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
+                        post.status === 'PENDING' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {post.status === 'APPROVED' ? 'Onaylı' : post.status === 'PENDING' ? 'Bekliyor' : 'Reddedildi'}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right space-x-3">
+                      <Link href={`/admin/posts/${post.id}`} className="text-sm font-bold text-[#005da4] hover:underline">
+                        İncele
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

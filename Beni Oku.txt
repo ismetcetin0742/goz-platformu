@@ -13,3 +13,6 @@ PORT:587
 Kullanıcı:resend
 Şifre:re_JCA2TEPh_57AFm6vZ3QcJ8qS4oFZzgF4S
 Mail Adresi :onboarding@resend.dev
+
+
+https://www.docplanner.com/

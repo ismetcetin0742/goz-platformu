@@ -1,117 +1,77 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import UserRoleSelect from "./UserRoleSelect";
+import UserActionButtons from "./UserActionButtons";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default async function AdminUsersPage() {
+  const session = await auth();
+  
+  // Ekstra Güvenlik: Sadece ADMIN'ler kullanıcı listesini görebilir
+  if (session?.user?.role !== "ADMIN") {
+    redirect("/admin"); 
+  }
 
-  const loadUsers = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/users");
-      const data = await res.json();
-      setUsers(data);
-    } catch (err) {
-      console.error("Yükleme Hatası:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { loadUsers(); }, []);
-
-  const handleRoleChange = async (id: number, currentRole: string) => {
-    const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
-    if (!confirm(`Bu kullanıcının yetkisini ${newRole} olarak değiştirmek istediğinize emin misiniz?`)) return;
-
-    try {
-      const res = await fetch(`/api/admin/users/${id}/role`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (res.ok) {
-        setUsers((prev: any) => prev.map((u: any) => u.id === id ? { ...u, role: newRole } : u));
-      }
-    } catch (error) {
-      alert("Hata oluştu.");
-    }
-  };
+  // Tüm kullanıcıları veritabanından çekiyoruz
+  const users = await prisma.user.findMany({
+    orderBy: { id: "desc" },
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-[#f8f9fa]">
+      <main className="max-w-7xl mx-auto px-6 py-16">
+
+        {/* Başlık */}
+        <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-black text-[#002f56]">Üye Yönetimi 👥</h1>
-            <p className="text-gray-500 font-medium">Toplam {users.length} kayıtlı üye bulunuyor.</p>
+            <h1 className="text-3xl font-black text-[#002f56]">Kullanıcı Yönetimi</h1>
+            <p className="text-gray-500 font-medium mt-2">Sisteme kayıtlı tüm üyeler ve yöneticiler.</p>
           </div>
-          <Link href="/admin" className="bg-white border px-4 py-2 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition shadow-sm">
-            ← Panele Dön
-          </Link>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Kullanıcı Bilgileri</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Yetki</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Durum</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-right">Eylem</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {loading ? (
-                <tr><td colSpan={4} className="p-20 text-center text-blue-500 font-bold animate-pulse">Yükleniyor...</td></tr>
-              ) : users.map((user: any) => (
-                <tr key={user.id} className="hover:bg-gray-50/30 transition-colors">
-                  <td className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="size-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                        {user.name?.[0] || "U"}
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">{user.name || "İsimsiz"}</div>
-                        <div className="text-sm text-gray-400 font-medium">{user.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-6">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                      user.role === "ADMIN" ? "bg-purple-100 text-purple-700 border border-purple-200" : "bg-gray-100 text-gray-600"
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="p-6">
-                    {user.emailVerified ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold gap-1.5">
-                        <span className="size-1.5 bg-green-600 rounded-full" /> Onaylı
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-bold gap-1.5">
-                        <span className="size-1.5 bg-orange-600 rounded-full animate-ping" /> Bekliyor
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-6 text-right">
-                    <button 
-                      onClick={() => handleRoleChange(user.id, user.role)}
-                      className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter"
-                    >
-                      Rolü Değiştir
-                    </button>
-                  </td>
+        {/* Kullanıcılar Tablosu */}
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="text-xs text-[#002f56] uppercase border-b border-gray-200 font-bold bg-white">
+                <tr>
+                  <th className="p-5">İsim & Soyisim</th>
+                  <th className="p-5">E-posta Adresi</th>
+                  <th className="p-5">Rol</th>
+                  <th className="p-5">Durum</th>
+                  <th className="p-5 text-right">İşlemler</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-gray-100 last:border-none hover:bg-gray-50 transition-colors">
+                    <td className="p-5 font-bold text-gray-800">{user.name || "İsimsiz Kullanıcı"}</td>
+                    <td className="p-5 text-gray-600 text-sm">{user.email}</td>
+                    <td className="p-5">
+                      <UserRoleSelect userId={user.id} currentRole={user.role} />
+                    </td>
+                    <td className="p-5">
+                      <span 
+                        className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                          user.isBanned ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                        }`}
+                        // Fare ile üzerine gelince yasaklama nedenini göster
+                        title={user.isBanned && user.banReason ? `Neden: ${user.banReason}` : ''}
+                      >
+                        {user.isBanned ? 'Yasaklı' : 'Aktif'}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      <UserActionButtons userId={user.id} isBanned={user.isBanned} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

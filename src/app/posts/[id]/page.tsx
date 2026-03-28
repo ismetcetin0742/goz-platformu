@@ -16,6 +16,24 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
+  // Görüntülenme sayısını 1 artırıyoruz (Atomik artış)
+  const updatedPost = await prisma.post.update({
+    where: { id: Number(id) },
+    data: { views: { increment: 1 } },
+  });
+
+  // Aynı kategorideki diğer onaylanmış makaleleri çekiyoruz (Mevcut makale hariç)
+  const currentCategory = (post as any).category || "Göz Sağlığı";
+  const relatedPosts = await prisma.post.findMany({
+    where: {
+      status: "APPROVED",
+      id: { not: Number(id) },
+      category: currentCategory,
+    } as any, // TypeScript Prisma şema senkronizasyonu hatası vermemesi için güvenli tip eklendi
+    take: 3,
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Basit Geri Dönüş Navbarı */}
@@ -45,6 +63,16 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
                 <span className="font-bold text-[#00a3e0] uppercase text-[10px] tracking-tighter">Yayınlanma</span>
                 <span className="text-gray-900 font-medium">{new Date(post.createdAt).toLocaleDateString("tr-TR")}</span>
              </div>
+             <div className="w-px h-8 bg-gray-200"></div>
+             <div className="flex flex-col">
+                <span className="font-bold text-[#00a3e0] uppercase text-[10px] tracking-tighter">Kategori</span>
+                <span className="text-gray-900 font-medium">{(post as any).category || "Göz Sağlığı"}</span>
+             </div>
+             <div className="w-px h-8 bg-gray-200"></div>
+             <div className="flex flex-col">
+                <span className="font-bold text-[#00a3e0] uppercase text-[10px] tracking-tighter">Okunma</span>
+                <span className="text-gray-900 font-medium">{updatedPost.views} kez</span>
+             </div>
           </div>
         </header>
 
@@ -70,6 +98,29 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
             {post.content}
           </div>
         </article>
+
+        {/* İlgili İçerikler Bölümü */}
+        {relatedPosts.length > 0 && (
+          <section className="mt-20 border-t-2 border-dashed border-gray-100 pt-12">
+            <h3 className="text-2xl font-black text-[#002f56] mb-8 uppercase tracking-tight">İlgili İçerikler ({currentCategory})</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {relatedPosts.map((related: any) => (
+                <Link href={`/posts/${related.id}`} key={related.id} className="group flex flex-col">
+                  <div className="w-full h-48 rounded-[2rem] overflow-hidden mb-5 bg-gray-50 shadow-sm border border-gray-100">
+                    {related.imageUrl ? (
+                      <img src={related.imageUrl} alt={related.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 font-black text-xs uppercase tracking-widest">Görsel Yok</div>
+                    )}
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 leading-snug group-hover:text-[#00a3e0] transition-colors line-clamp-2">
+                    {related.title}
+                  </h4>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Alt Bilgi */}
         <footer className="mt-20 pt-10 border-t border-gray-100 text-center">

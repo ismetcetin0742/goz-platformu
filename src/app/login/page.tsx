@@ -16,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      const result: { error?: string; ok: boolean; status: number; url: string | null } | undefined = await signIn("credentials", {
         email,
         password,
         callbackUrl: "/admin",
