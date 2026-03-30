@@ -41,7 +41,7 @@ async function getStats() {
 export default async function AdminDashboard() {
   const session = await auth();
 
-  const userRole = (session?.user as any)?.role;
+  const userRole = session?.user?.role;
   if (!session || userRole !== "ADMIN") {
     redirect("/");
   }
@@ -107,6 +107,20 @@ export default async function AdminDashboard() {
                     </div>
                     <Link href="/admin/opticians" className="bg-gray-100 text-center py-5 rounded-2xl font-black text-xl text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
                         Mağazaları Yönet
+                    </Link>
+                </div>
+
+                {/* Ürün Yönetimi */}
+                <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col justify-between group">
+                    <div>
+                        <div className="size-14 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:text-[#005da4] transition-transform">🛍️</div>
+                        <h2 className="text-3xl font-bold text-[#002f56] mb-4">Ürün Yönetimi</h2>
+                        <p className="text-gray-500 text-lg mb-8 leading-relaxed">
+                            Sistemdeki tüm mağazalara ait ürünleri listeleyin, inceleyin veya yeni ürün ekleyin.
+                        </p>
+                    </div>
+                    <Link href="/admin/products" className="bg-gray-100 text-center py-5 rounded-2xl font-black text-xl text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                        Ürünleri Yönet
                     </Link>
                 </div>
 

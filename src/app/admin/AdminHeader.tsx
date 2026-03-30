@@ -1,6 +1,6 @@
 import Link from "next/link";
 import UserMenu from "@/components/UserMenu";
-import { Session } from "next-auth"; // Session tipini import etmeyi unutma
+import { Session } from "next-auth";
 
 interface AdminHeaderProps {
   session: Session;
