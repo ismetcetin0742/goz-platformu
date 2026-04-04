@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Optician } from '@prisma/client';
+import VirtualTryOn3D from '@/components/VirtualTryOn3D';
 
 // Client Component'in prop olarak alacağı mağaza tipini tanımlıyoruz.
 // Veritabanından gelen Optician tipine, kategorileri tutan bir dizi ekliyoruz.
@@ -30,7 +31,6 @@ export default function GozluklerClientPage({ stores }: { stores: StoreWithCateg
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showKVKK, setShowKVKK] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleStoreSelect = (store: StoreWithCategories) => {
     setSelectedStore(store);
@@ -57,30 +57,6 @@ export default function GozluklerClientPage({ stores }: { stores: StoreWithCateg
     setIsCameraActive(true);
   };
 
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    if (isCameraActive && videoRef.current) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((mediaStream) => {
-          stream = mediaStream;
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => {
-          console.error("Kameraya erişilemedi:", err);
-          alert("Kamera erişimi reddedildi veya bulunamadı.");
-          setIsCameraActive(false);
-        });
-    }
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [isCameraActive]);
-
   const handleCategoryChange = (category: 'gunes' | 'numarali') => {
     setActiveCategory(category);
     setIsCameraActive(false);
@@ -90,20 +66,10 @@ export default function GozluklerClientPage({ stores }: { stores: StoreWithCateg
 
   const renderCameraView = () => (
     <div className="w-full max-w-4xl flex flex-col items-center">
-      <div className="w-full flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800">
-          {selectedProduct?.brand} - {selectedProduct?.name} Deneniyor
-        </h3>
-        <button onClick={() => setIsCameraActive(false)} className="text-red-500 font-bold hover:text-red-700">
-          Kamerayı Kapat
-        </button>
-      </div>
-      <div className="w-full relative bg-black flex items-center justify-center overflow-hidden rounded-2xl shadow-2xl min-h-[500px]">
-        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transform scale-x-[-1]" />
-        <div className="absolute bottom-6 text-white bg-black bg-opacity-50 px-4 py-2 rounded-full backdrop-blur-sm">
-          Sanal Deneme Aktif - Yüzünüz Takip Ediliyor...
-        </div>
-      </div>
+      <VirtualTryOn3D 
+        product={selectedProduct} 
+        onClose={() => setIsCameraActive(false)} 
+      />
     </div>
   );
 

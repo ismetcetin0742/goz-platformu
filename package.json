@@ -10,6 +10,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/face_mesh": "^0.4.1633559619",
     "@prisma/client": "^6.19.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -25,6 +27,7 @@
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.1",
     "resend": "^6.9.3",
+    "three": "^0.183.2",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
@@ -37,6 +40,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-leaflet": "^2.8.3",
+    "@types/three": "^0.183.1",
     "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
