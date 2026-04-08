@@ -22,9 +22,12 @@ export default function AdminHeader({ session }: AdminHeaderProps) {
           </Link>
 
           {/* İsteğe bağlı: Hızlı Linkler */}
-          <nav className="hidden lg:flex items-center gap-4 text-sm font-bold text-gray-500">
-            <Link href="/admin" className="hover:text-[#005da4]">Panel</Link>
-            <Link href="/admin/posts" className="hover:text-[#005da4]">İçerikler</Link>
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-bold text-gray-500">
+            <Link href="/admin" className="hover:text-[#005da4] transition-colors">Panel</Link>
+            <Link href="/admin/products" className="hover:text-[#005da4] transition-colors">Ürünler</Link>
+            <Link href="/admin/opticians" className="hover:text-[#005da4] transition-colors">Mağazalar</Link>
+            <Link href="/admin/posts" className="hover:text-[#005da4] transition-colors">İçerikler</Link>
+            <Link href="/admin/users" className="hover:text-[#005da4] transition-colors">Kullanıcılar</Link>
           </nav>
         </div>
 

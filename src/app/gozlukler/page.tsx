@@ -3,15 +3,17 @@ import { prisma } from '@/lib/prisma';
 import GozluklerClientPage, { StoreWithCategories } from './GozluklerClientPage';
 
 export default async function GozluklerPage() {
-  // 1. Veritabanından tüm optik mağazalarını çekiyoruz.
-  const opticians = await prisma.optician.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  // 1. Veritabanından tüm optik mağazalarını ve ürünlerini çekiyoruz.
+  const [opticians, products] = await Promise.all([
+    prisma.optician.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+    })
+  ]);
 
   // 2. Veritabanından gelen veriyi, istemci bileşeninin beklediği yapıya dönüştürüyoruz.
-  //    Boolean (hasSunGlasses) alanlarını, string dizisine (allowedCategories) çeviriyoruz.
   const stores: StoreWithCategories[] = opticians.map(optician => {
     const allowedCategories: ('gunes' | 'numarali')[] = [];
     if (optician.hasSunGlasses) {
@@ -25,6 +27,13 @@ export default async function GozluklerPage() {
       allowedCategories,
     };
   });
+
+  // 3. Prisma'dan gelen Decimal (Ondalıklı sayı) tipindeki verileri Next.js'in
+  // İstemci Bileşenlerine (Client Components) aktarabilmesi için standart JavaScript sayısına dönüştürüyoruz.
+  const serializedProducts = products.map((product) => ({
+    ...product,
+    price: product.price ? Number(product.price) : 0,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
@@ -41,8 +50,8 @@ export default async function GozluklerPage() {
         </div>
       </header>
 
-      {/* 3. Etkileşimli tüm mantığı içeren istemci bileşenini gerçek verilerle render ediyoruz. */}
-      <GozluklerClientPage stores={stores} />
+      {/* 4. Etkileşimli tüm mantığı içeren istemci bileşenini serileştirilmiş gerçek verilerle render ediyoruz. */}
+      <GozluklerClientPage stores={stores} allProducts={serializedProducts} />
     </div>
   );
 }

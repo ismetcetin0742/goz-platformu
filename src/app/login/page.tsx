@@ -16,15 +16,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result: { error?: string; ok: boolean; status: number; url: string | null } | undefined = await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         callbackUrl: "/admin",
-        redirect: true,
+        redirect: false,
       });
 
       if (result?.error) {
         setError("E-posta veya şifre hatalı.");
+      } else {
+        window.location.href = "/admin";
       }
     } catch (err) {
       setError("Giriş yapılırken bir sorun oluştu.");

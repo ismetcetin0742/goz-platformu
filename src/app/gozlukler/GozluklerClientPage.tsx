@@ -1,36 +1,34 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { Optician } from '@prisma/client';
+import React, { useState } from 'react';
+import { Optician, Product } from '@prisma/client';
 import VirtualTryOn3D from '@/components/VirtualTryOn3D';
+import Image from 'next/image';
 
 // Client Component'in prop olarak alacağı mağaza tipini tanımlıyoruz.
-// Veritabanından gelen Optician tipine, kategorileri tutan bir dizi ekliyoruz.
 export type StoreWithCategories = Optician & {
   allowedCategories: ('gunes' | 'numarali')[];
 };
 
-// Ürünler için sahte veri, bu daha sonra veritabanına taşınabilir.
-const MOCK_PRODUCTS = {
-  gunes: [
-    { id: 101, name: "Ray-Ban Aviator", brand: "Ray-Ban", price: "4.500 TL" },
-    { id: 102, name: "Vogue Elegance", brand: "Vogue", price: "2.100 TL" },
-    { id: 103, name: "Oakley Classic", brand: "Oakley", price: "6.200 TL" },
-  ],
-  numarali: [
-    { id: 201, name: "Prada Minimal", brand: "Prada", price: "3.200 TL" },
-    { id: 202, name: "Tom Ford Optic", brand: "Tom Ford", price: "5.400 TL" },
-  ]
-};
-
-export default function GozluklerClientPage({ stores }: { stores: StoreWithCategories[] }) {
+export default function GozluklerClientPage({ stores, allProducts }: { stores: StoreWithCategories[], allProducts: Product[] }) {
   // --- DURUMLAR (STATES) ---
   const [selectedStore, setSelectedStore] = useState<StoreWithCategories | null>(null);
   const [activeCategory, setActiveCategory] = useState<'gunes' | 'numarali'>('gunes');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showKVKK, setShowKVKK] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
+
+  // Seçilen mağazanın ürünlerini filtrele
+  const storeProducts = selectedStore 
+    ? allProducts.filter(p => p.opticianId === selectedStore.id)
+    : [];
+
+  // Mevcut kategoriye göre ürünleri filtrele
+  const filteredProducts = storeProducts.filter(p => {
+    if (activeCategory === 'gunes') return p.category === "SUNGLASSES";
+    if (activeCategory === 'numarali') return p.category === "PRESCRIPTION";
+    return false;
+  });
 
   const handleStoreSelect = (store: StoreWithCategories) => {
     setSelectedStore(store);
@@ -110,15 +108,33 @@ export default function GozluklerClientPage({ stores }: { stores: StoreWithCateg
             {selectedStore.allowedCategories.includes('numarali') && <button onClick={() => handleCategoryChange('numarali')} className={`px-6 py-2 rounded-full font-bold transition-colors ${activeCategory === 'numarali' ? 'bg-[#005da4] text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>Numaralı Gözlükler</button>}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MOCK_PRODUCTS[activeCategory]?.map((product: any) => (
+            {filteredProducts.map((product) => (
               <div key={product.id} className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col items-center p-6 border border-gray-100">
-                <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-6"><span className="text-gray-400 font-medium">Gözlük Görseli</span></div>
+                <div className="w-full h-48 bg-gray-50 rounded-lg flex items-center justify-center mb-6 relative overflow-hidden">
+                  {product.imageUrl ? (
+                    <Image src={product.imageUrl} alt={product.name} fill className="object-contain" />
+                  ) : (
+                    <span className="text-gray-400 font-medium">Gözlük Görseli</span>
+                  )}
+                </div>
                 <h3 className="text-xl font-bold text-gray-800 text-center">{product.name}</h3>
                 <p className="text-gray-500 mb-2">{product.brand}</p>
-                <p className="text-[#005da4] font-black text-lg mb-6">{product.price}</p>
-                <button onClick={() => handleCanliDeneClick(product)} className="w-full py-3 bg-[#00a3e0] text-white font-bold rounded-xl shadow-md hover:bg-[#005da4] transition transform hover:scale-105 active:scale-95">Canlı Dene</button>
+                <p className="text-[#005da4] font-black text-lg mb-6">
+                  {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(Number(product.price))}
+                </p>
+                <button 
+                  onClick={() => handleCanliDeneClick(product)} 
+                  className="w-full py-3 bg-[#00a3e0] text-white font-bold rounded-xl shadow-md hover:bg-[#005da4] transition transform hover:scale-105 active:scale-95"
+                >
+                  Canlı Dene
+                </button>
               </div>
             ))}
+            {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-20 text-gray-400 font-medium">
+                    Bu kategoride henüz ürün bulunmamaktadır.
+                </div>
+            )}
           </div>
         </div>
       )}

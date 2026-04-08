@@ -93,6 +93,7 @@ model Product {
   description String          @db.Text
   price       Decimal         @db.Decimal(10, 2)
   imageUrl    String?
+  visual360   String?         // 360 derece görsel URL'si
   category    ProductCategory
   optician    Optician        @relation(fields: [opticianId], references: [id], onDelete: Cascade)
   opticianId  Int

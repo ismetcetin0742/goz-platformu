@@ -3,8 +3,10 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "./lib/prisma";
 import bcrypt from "bcryptjs";
+import { JWT } from "next-auth/jwt";
+import { Session } from "next-auth";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const config = {
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -30,12 +32,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email, 
           name: user.name, 
           role: user.role 
-        };
+        } as any;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: any }) {
       // Sadece ilk girişte user dolu gelir, o an her şeyi token'a mühürle
       if (user) {
         token.id = user.id;
@@ -44,11 +46,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       // Token'daki her şeyi session'a (arayüze) aktar
       if (session.user && token) {
-        session.user.id = token.id as string;
-        session.user.role = (token.role as string) || "USER";
+        (session.user as any).id = token.id as string;
+        (session.user as any).role = (token.role as string) || "USER";
         session.user.name = token.name as string; // İsmi arayüze bastık
 
         // Kullanıcının yasaklı olup olmadığını veritabanından kontrol et
@@ -59,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!dbUser || dbUser.isBanned) {
-            session.error = "BannedUser";
+            (session as any).error = "BannedUser";
           }
         }
       }
@@ -68,4 +70,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET,
-});
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(config as any);
